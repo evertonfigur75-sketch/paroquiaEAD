@@ -1,0 +1,6 @@
+{
+  "name": "Plataforma de Ensino Luterano",
+  "description": "Plataforma para administração da instrução cristã, Ensino Confirmatório e Profissão de Fé de paróquia luterana.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

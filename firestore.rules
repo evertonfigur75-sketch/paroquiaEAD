@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin has full access to everything
+    match /{document=**} {
+      allow read, write: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'evertonfigur75@gmail.com'
+      );
+    }
+
+    // Student profiles
+    match /studentProfiles/{studentId} {
+      allow read, update: if request.auth != null && request.auth.uid == studentId;
+      allow create: if true; // Allows anyone to send a registration request
+    }
+
+    // Students can read activities
+    match /activities/{activityId} {
+      allow read: if request.auth != null;
+    }
+
+    // Students can read and create their own grades
+    match /grades/{gradeId} {
+      allow read, create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.studentId == request.auth.uid;
+    }
+
+    // Worship records
+    match /worshipRecords/{recordId} {
+      allow read, create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
+    }
+
+    // Public settings and congregations
+    match /settings/{settingId} {
+      allow read: if true;
+    }
+    match /congregations/{congId} {
+      allow read: if true;
+    }
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read, update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Activity drafts
+    match /activityDrafts/{draftId} {
+      allow read, write: if request.auth != null && (draftId.startsWith(request.auth.uid) || request.resource.data.studentId == request.auth.uid || resource.data.studentId == request.auth.uid);
+    }
+
+    // FCM Tokens
+    match /fcmTokens/{tokenId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create, update: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Messages
+    match /messages/{messageId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.studentId || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'evertonfigur75@gmail.com'
+      );
+      allow create: if request.auth != null && (
+        request.auth.uid == request.resource.data.senderId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'evertonfigur75@gmail.com'
+      );
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.recipientId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'evertonfigur75@gmail.com'
+      );
+    }
+  }
+}

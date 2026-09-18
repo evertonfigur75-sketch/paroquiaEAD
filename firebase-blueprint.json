@@ -1,0 +1,117 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "description": "Admin users and profile data",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "role", "type": "string" },
+        { "name": "avatarUrl", "type": "string" },
+        { "name": "phone", "type": "string" },
+        { "name": "city", "type": "string" },
+        { "name": "state", "type": "string" },
+        { "name": "createdAt", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "studentProfiles",
+      "description": "Profiles for students (confirmandos)",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "role", "type": "string" },
+        { "name": "congregationId", "type": "string" },
+        { "name": "congregationName", "type": "string" },
+        { "name": "status", "type": "string" },
+        { "name": "createdAt", "type": "timestamp" },
+        { "name": "enrollmentDate", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "activities",
+      "description": "Study materials and quizzes",
+      "fields": [
+        { "name": "title", "type": "string" },
+        { "name": "description", "type": "string" },
+        { "name": "courseId", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "maxScore", "type": "number" },
+        { "name": "questions", "type": "array" }
+      ]
+    },
+    {
+      "name": "grades",
+      "description": "Scores and answers for activities",
+      "fields": [
+        { "name": "studentId", "type": "string" },
+        { "name": "activityId", "type": "string" },
+        { "name": "score", "type": "number" },
+        { "name": "answers", "type": "map" },
+        { "name": "submittedAt", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "worshipRecords",
+      "description": "Attendance logs for worship services",
+      "fields": [
+        { "name": "studentId", "type": "string" },
+        { "name": "date", "type": "string" },
+        { "name": "status", "type": "string" },
+        { "name": "pastorNotes", "type": "string" },
+        { "name": "submittedAt", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "events",
+      "description": "Church calendar events",
+      "fields": [
+        { "name": "title", "type": "string" },
+        { "name": "date", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "congregationId", "type": "string" }
+      ]
+    },
+    {
+      "name": "settings",
+      "description": "Global application branding settings",
+      "fields": [
+        { "name": "appName", "type": "string" },
+        { "name": "primaryColor", "type": "string" },
+        { "name": "accentColor", "type": "string" }
+      ]
+    },
+    {
+      "name": "notifications",
+      "description": "Alerts for students about new content or updates",
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "title", "type": "string" },
+        { "name": "message", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "read", "type": "boolean" },
+        { "name": "createdAt", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "activityDrafts",
+      "description": "Unsubmitted questionnaire answers for students",
+      "fields": [
+        { "name": "studentId", "type": "string" },
+        { "name": "activityId", "type": "string" },
+        { "name": "answers", "type": "map" },
+        { "name": "updatedAt", "type": "timestamp" }
+      ]
+    },
+    {
+      "name": "fcmTokens",
+      "description": "FCM registration tokens for push notifications",
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "token", "type": "string" },
+        { "name": "platform", "type": "string" },
+        { "name": "updatedAt", "type": "timestamp" }
+      ]
+    }
+  ]
+}
