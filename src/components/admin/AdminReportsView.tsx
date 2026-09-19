@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { driveService } from '../../services/drive';
 import { useAuth } from '../../context/AuthContext';
+import { auth } from '../../lib/firebase';
 import { convertToCSV, downloadCSV } from '../../utils/csvExport';
 
 interface StorageBackup {
@@ -48,7 +49,7 @@ export const AdminReportsView: React.FC = () => {
     if (!isAdmin) return;
     setIsLoadingBackups(true);
     try {
-      const idToken = await currentUser?.getIdToken();
+      const idToken = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/backups', {
         headers: {
           'Authorization': `Bearer ${idToken}`
@@ -73,7 +74,7 @@ export const AdminReportsView: React.FC = () => {
 
   const handleDownloadStorageBackup = async (fileName: string) => {
     try {
-      const idToken = await currentUser?.getIdToken();
+      const idToken = await auth.currentUser?.getIdToken();
       const response = await fetch(`/api/admin/backups/${fileName}`, {
         headers: {
           'Authorization': `Bearer ${idToken}`
@@ -92,7 +93,7 @@ export const AdminReportsView: React.FC = () => {
   const handleTriggerManualBackup = async () => {
     setIsTriggeringBackup(true);
     try {
-      const idToken = await currentUser?.getIdToken();
+      const idToken = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/backups/trigger', {
         method: 'POST',
         headers: {
@@ -341,7 +342,7 @@ export const AdminReportsView: React.FC = () => {
       <div className="hidden print:block text-center border-b-2 border-slate-900 pb-4 mb-4">
         <h1 className="text-xl font-bold font-serif">PARÓQUIA EVANGÉLICA LUTERANA SÃO PAULO</h1>
         <h2 className="text-sm font-semibold">Igreja Evangélica Luterana do Brasil (IELB)</h2>
-        <p className="text-xs text-slate-600">Pastor Everton Figur • Distrito Alto Uruguai • Planalto/RS</p>
+        <p className="text-xs text-slate-600">Pastor Everton Figur • {currentUser?.district || 'Distrito Parque do Iguaçu'} • {currentUser?.city || 'Planalto'}/{currentUser?.state || 'PR'}</p>
       </div>
 
       {/* REPORT 1: Lista Geral de Alunos */}

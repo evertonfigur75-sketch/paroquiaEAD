@@ -37,7 +37,7 @@ import {
 import { DirectMessaging } from './components/common/DirectMessaging';
 
 const AppContent: React.FC = () => {
-  const { currentUser, isAdmin, studentProfile, logout, refreshProfile } = useAuth();
+  const { currentUser, isAdmin, studentProfile, logout, refreshUser } = useAuth();
 
   // Auth modal states
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -140,6 +140,31 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // Explicit security guard: If user has role admin but their email is NOT the authorized pastor email
+  if (currentUser.role === 'admin' && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white border border-rose-200 shadow-xl text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
+            <Shield className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 font-display">
+            Acesso Pastoral Restrito
+          </h2>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            O painel de administração é restrito exclusivamente ao endereço de e-mail oficial do Pastor (<strong>evertonfigur75@gmail.com</strong>).
+          </p>
+          <button
+            onClick={logout}
+            className="py-2.5 px-6 rounded-xl bg-slate-800 text-white text-xs font-bold hover:bg-slate-900 transition cursor-pointer"
+          >
+            Sair e Conectar com E-mail Autorizado
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // If logged in as STUDENT
   // Check if pending approval
   if (studentProfile?.status === 'pending') {
@@ -151,10 +176,7 @@ const AppContent: React.FC = () => {
         />
 
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8">
-          <PendingApprovalNotice
-            onRefresh={refreshProfile}
-            onLogout={logout}
-          />
+          <PendingApprovalNotice />
         </main>
 
         <NotificationToast />
@@ -363,7 +385,7 @@ const AppContent: React.FC = () => {
           activityId={activeActivityId}
           onClose={() => setActiveActivityId(null)}
           onCompleted={() => {
-            refreshProfile();
+            refreshUser();
           }}
         />
       )}

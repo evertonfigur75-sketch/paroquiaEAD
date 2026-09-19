@@ -11,8 +11,22 @@ service cloud.firestore {
 
     // Student profiles
     match /studentProfiles/{studentId} {
-      allow read, update: if request.auth != null && request.auth.uid == studentId;
+      allow read: if true; // Allows checking email uniqueness and reading approved status
       allow create: if true; // Allows anyone to send a registration request
+      allow update, delete: if request.auth != null && (
+        request.auth.uid == studentId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'evertonfigur75@gmail.com'
+      );
+    }
+
+    // Audit and system logs
+    match /logs/{logId} {
+      allow create: if true; // Allows logging registrations and auth attempts
+      allow read, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.email == 'evertonfigur75@gmail.com'
+      );
     }
 
     // Students can read activities

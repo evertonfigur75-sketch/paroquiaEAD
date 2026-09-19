@@ -17,7 +17,9 @@ import {
   Sparkles,
   Award,
   BookOpen,
+  Database,
 } from 'lucide-react';
+import { FirestoreAdminSetupModal } from '../admin/FirestoreAdminSetupModal';
 
 interface LoginModalProps {
   isOpen?: boolean;
@@ -39,9 +41,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const { login, googleSignIn } = useAuth();
   const [activeTab, setActiveTab] = useState<'admin' | 'student'>(initialRole);
 
-  // Admin credentials state
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  // Admin credentials state (prefilled for instant access)
+  const [adminEmail, setAdminEmail] = useState('evertonfigur75@gmail.com');
+  const [adminPassword, setAdminPassword] = useState('Pastor#75');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
 
   // Student credentials state
@@ -51,6 +53,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showFirestoreSetup, setShowFirestoreSetup] = useState(false);
 
   if (isOpen === false) return null;
 
@@ -233,35 +236,28 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
               {/* Login Form for Pastor Everton Figur */}
               <div className="space-y-4">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setError(null);
-                    setLoading(true);
-                    const res = await googleSignIn();
-                    setLoading(false);
-                    if (res.success) {
-                      onClose();
-                    } else {
-                      setError(res.message || 'Erro ao entrar com Google.');
-                    }
-                  }}
-                  disabled={loading}
-                  className="w-full py-3 px-4 rounded-2xl bg-white border border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 transition shadow-sm flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                  </svg>
-                  <span>Entrar com Google (Recomendado para Drive)</span>
-                </button>
-
-                <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-slate-200"></div>
-                  <span className="flex-shrink mx-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ou usar e-mail</span>
-                  <div className="flex-grow border-t border-slate-200"></div>
+                {/* One-Click Quick Access Badge */}
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300/80 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-amber-950">Acesso Pastoral Oficial:</p>
+                    <p className="text-[11px] text-amber-800">
+                      E-mail: <span className="font-mono font-semibold">evertonfigur75@gmail.com</span>
+                    </p>
+                    <p className="text-[11px] text-amber-800">
+                      Senha padrão: <span className="font-mono font-semibold">Pastor#75</span>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminEmail('evertonfigur75@gmail.com');
+                      setAdminPassword('Pastor#75');
+                      setError(null);
+                    }}
+                    className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-xs transition"
+                  >
+                    Auto-Preencher
+                  </button>
                 </div>
 
                 <form onSubmit={handleAdminSubmit} className="space-y-4">
@@ -282,47 +278,94 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </div>
                   </div>
 
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                      Senha de Acesso
-                    </label>
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Senha de Acesso
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-amber-700 absolute left-3 top-3.5" />
+                      <input
+                        id="input-admin-password"
+                        type={showAdminPassword ? 'text' : 'password'}
+                        required
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        className="w-full pl-9 pr-10 py-2.5 rounded-2xl border border-slate-300 text-sm font-medium text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPassword(!showAdminPassword)}
+                        className="absolute right-3 top-3 text-slate-400 hover:text-slate-700 p-0.5"
+                      >
+                        {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-amber-700 absolute left-3 top-3.5" />
-                    <input
-                      id="input-admin-password"
-                      type={showAdminPassword ? 'text' : 'password'}
-                      required
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      className="w-full pl-9 pr-10 py-2.5 rounded-2xl border border-slate-300 text-sm font-medium text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowAdminPassword(!showAdminPassword)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-700 p-0.5"
-                    >
-                      {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+
+                  {/* Main Action Button */}
+                  <button
+                    id="btn-login-as-pastor"
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-slate-950 font-bold text-sm hover:from-amber-600 hover:to-amber-600 active:scale-98 transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>
+                      {loading ? 'Autenticando Pastor...' : 'Entrar no Painel Pastoral'}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t border-slate-200"></div>
+                  <span className="flex-shrink mx-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Opção Google Drive</span>
+                  <div className="flex-grow border-t border-slate-200"></div>
                 </div>
 
-                {/* Main Action Button */}
                 <button
-                  id="btn-login-as-pastor"
-                  type="submit"
+                  type="button"
+                  onClick={async () => {
+                    setError(null);
+                    setLoading(true);
+                    const res = await googleSignIn();
+                    setLoading(false);
+                    if (res.success) {
+                      onClose();
+                    } else {
+                      if (res.message?.includes('unauthorized-domain')) {
+                        setError('O domínio catecismoead.kinghost.net precisa ser adicionado aos domínios autorizados no Console do Firebase para autenticar via Google. Por favor, utilize a senha pastoral "Pastor#75" acima para entrar direto.');
+                      } else {
+                        setError(res.message || 'Erro ao entrar com Google.');
+                      }
+                    }
+                  }}
                   disabled={loading}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-slate-950 font-bold text-sm hover:from-amber-600 hover:to-amber-600 active:scale-98 transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-2xl bg-white border border-slate-300 text-slate-700 font-medium text-xs hover:bg-slate-50 transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>
-                    {loading ? 'Autenticando Pastor...' : 'Entrar como Pastor Everton Figur'}
-                  </span>
-                  <ArrowRight className="w-4 h-4" />
+                  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-4 h-4">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                  </svg>
+                  <span>Conectar conta Google (para backup no Drive)</span>
                 </button>
-              </form>
-            </div>
+
+                {/* Direct Link to Firestore Admin Helper */}
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowFirestoreSetup(true)}
+                    className="inline-flex items-center gap-1.5 text-xs text-amber-800 hover:text-amber-950 font-semibold hover:underline cursor-pointer transition"
+                  >
+                    <Database className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Guia & Helper: Configurar Administrador no Firestore</span>
+                  </button>
+                </div>
+              </div>
           </div>
         )}
 
@@ -417,6 +460,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           )}
         </div>
       </div>
+
+      {/* Firestore First Admin Setup Helper Modal */}
+      {showFirestoreSetup && (
+        <FirestoreAdminSetupModal
+          isOpen={showFirestoreSetup}
+          onClose={() => setShowFirestoreSetup(false)}
+        />
+      )}
     </div>
   );
 };

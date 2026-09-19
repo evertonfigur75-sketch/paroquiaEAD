@@ -32,6 +32,7 @@ export interface User {
   cep?: string;
   state?: string;
   city?: string;
+  district?: string;
   neighborhood?: string;
   street?: string;
   number?: string;
@@ -299,7 +300,8 @@ export interface AppSettings {
   logoType: 'luther_rose' | 'custom_upload' | 'url';
   logoUrl?: string;
   primaryColor: string; // Hex color code e.g. #1e3a5f
-  accentColor: string; // Hex color code e.g. #f59e0b
+  accentColor: string; // Hex color code e.g. #f59e0b;
+  googleDriveWebhookUrl?: string; // Webhook do Google Apps Script para salvar arquivos no Google Drive
 }
 
 export type NotificationType = 'activity' | 'grade' | 'announcement' | 'system';

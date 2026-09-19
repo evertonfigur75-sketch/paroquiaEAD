@@ -15,6 +15,7 @@ import { AdminAuditLogs } from './AdminAuditLogs';
 import { AdminAuthenticationLogger } from './AdminAuthenticationLogger';
 import { AdminMetricsDashboard } from './AdminMetricsDashboard';
 import { AdminFileManager } from './AdminFileManager';
+import { AdminCertificatesView } from './AdminCertificatesView';
 import {
   LayoutDashboard,
   Clock,
@@ -32,6 +33,7 @@ import {
   Terminal,
   ShieldCheck,
   HardDrive,
+  Award,
 } from 'lucide-react';
 import { AdminScriptsPanel } from './AdminScriptsPanel';
 
@@ -227,6 +229,18 @@ export const AdminDashboard: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('certificados')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'certificados'
+                ? 'bg-[#1e3a5f] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            <span>Certificados</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('arquivos')}
             className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'arquivos'
@@ -312,6 +326,8 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'conteudos' && <AdminContentManagementView />}
 
       {activeTab === 'relatorios' && <AdminReportsView />}
+      
+      {activeTab === 'certificados' && <AdminCertificatesView />}
 
       {activeTab === 'arquivos' && <AdminFileManager />}
 

@@ -56,7 +56,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
   // Address
   const [cep, setCep] = useState('');
-  const [state, setState] = useState('RS');
+  const [state, setState] = useState('PR');
   const [city, setCity] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [street, setStreet] = useState('');
@@ -68,7 +68,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   const [baptismDate, setBaptismDate] = useState('');
   const [baptismChurch, setBaptismChurch] = useState('');
   const [baptismCity, setBaptismCity] = useState('');
-  const [baptismState, setBaptismState] = useState('RS');
+  const [baptismState, setBaptismState] = useState('PR');
   const [baptismNotes, setBaptismNotes] = useState('');
 
   // Faith Profession specific: Church history
@@ -77,7 +77,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
       id: 'ch-1',
       churchName: '',
       city: '',
-      state: 'RS',
+      state: 'PR',
       period: '',
       notes: '',
     },
@@ -92,7 +92,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
         id: 'ch-' + Date.now(),
         churchName: '',
         city: '',
-        state: 'RS',
+        state: 'PR',
         period: '',
         notes: '',
       },
@@ -147,34 +147,42 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
     const selectedCongregation = congregations.find((c) => c.id === congregationId);
 
-    const res = await register({
-      name,
-      email,
+    const payload: any = {
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
       role: 'student',
       avatarUrl: avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
-      birthDate,
-      phone,
-      cep,
-      state,
-      city,
-      neighborhood,
-      street,
-      number,
-      complement,
+      birthDate: birthDate || '',
+      phone: phone || '',
+      cep: cep || '',
+      state: state || '',
+      city: city || '',
+      neighborhood: neighborhood || '',
+      street: street || '',
+      number: number || '',
+      complement: complement || '',
       courseType,
       congregationId,
       congregationName: selectedCongregation?.name || 'Congregação Paroquial',
       password,
       baptism: {
-        isBaptized,
-        date: baptismDate,
-        church: baptismChurch,
-        city: baptismCity,
-        state: baptismState,
-        notes: baptismNotes,
+        isBaptized: !!isBaptized,
+        date: baptismDate || '',
+        church: baptismChurch || '',
+        city: baptismCity || '',
+        state: baptismState || '',
+        notes: baptismNotes || '',
       },
-      churchHistory: courseType === 'profissao_fe' ? churchHistory.filter((c) => c.churchName.trim() !== '') : undefined,
-    });
+    };
+
+    if (courseType === 'profissao_fe') {
+      const validHistory = churchHistory.filter((c) => c.churchName.trim() !== '');
+      if (validHistory.length > 0) {
+        payload.churchHistory = validHistory;
+      }
+    }
+
+    const res = await register(payload);
 
     setLoading(false);
     if (res.success) {
@@ -452,7 +460,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                         type="text"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
-                        placeholder="RS"
+                        placeholder="PR"
                         className="w-full p-2 rounded-lg border border-slate-300 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
                       />
                     </div>
@@ -590,7 +598,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                         type="text"
                         value={baptismState}
                         onChange={(e) => setBaptismState(e.target.value)}
-                        placeholder="RS"
+                        placeholder="PR"
                         className="w-full p-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
                       />
                     </div>
@@ -681,7 +689,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                             type="text"
                             value={item.state}
                             onChange={(e) => updateChurchHistoryItem(item.id, 'state', e.target.value)}
-                            placeholder="RS"
+                            placeholder="PR"
                             className="w-full p-2 rounded-lg border border-slate-300 text-xs bg-white focus:ring-1 focus:ring-amber-500 focus:outline-none"
                           />
                         </div>

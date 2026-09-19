@@ -15,7 +15,9 @@ import {
   Church,
   Eye,
   EyeOff,
+  Database,
 } from 'lucide-react';
+import { FirestoreAdminSetupModal } from './FirestoreAdminSetupModal';
 
 interface AdminProfileModalProps {
   isOpen: boolean;
@@ -36,7 +38,8 @@ export const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80'
   );
   const [city, setCity] = useState(currentUser?.city || 'Planalto');
-  const [state, setState] = useState(currentUser?.state || 'RS');
+  const [state, setState] = useState(currentUser?.state || 'PR');
+  const [district, setDistrict] = useState(currentUser?.district || 'Distrito Parque do Iguaçu');
   const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
 
   // Password change
@@ -46,6 +49,7 @@ export const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
 
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showFirestoreSetup, setShowFirestoreSetup] = useState(false);
 
   if (!isOpen) return null;
 
@@ -60,6 +64,7 @@ export const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
       avatarUrl,
       city,
       state,
+      district,
     }, avatarFile);
 
     if (newPassword) {
@@ -182,7 +187,7 @@ export const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="sm:col-span-1">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
                 Telefone / WhatsApp
@@ -191,6 +196,19 @@ export const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                Distrito
+              </label>
+              <input
+                type="text"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                placeholder="Distrito Parque do Iguaçu"
                 className="w-full p-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
               />
             </div>
@@ -260,26 +278,45 @@ export const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex items-center justify-between gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+              onClick={() => setShowFirestoreSetup(true)}
+              className="text-xs text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1.5 hover:underline cursor-pointer"
             >
-              Fechar
+              <Database className="w-3.5 h-3.5" />
+              <span>Status & Helper Firestore</span>
             </button>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition shadow-sm flex items-center gap-1.5 active:scale-98"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>{saving ? 'Salvando...' : 'Salvar Alterações'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Fechar
+              </button>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition shadow-sm flex items-center gap-1.5 active:scale-98 cursor-pointer"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{saving ? 'Salvando...' : 'Salvar Alterações'}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>
+
+      {/* Firestore Admin Setup Modal */}
+      {showFirestoreSetup && (
+        <FirestoreAdminSetupModal
+          isOpen={showFirestoreSetup}
+          onClose={() => setShowFirestoreSetup(false)}
+        />
+      )}
     </div>
   );
 };

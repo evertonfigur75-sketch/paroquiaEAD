@@ -39,7 +39,9 @@ import {
   Activity as ActivityIcon,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { auth } from '../../lib/firebase';
 import { ModuleCompletionChart } from './ModuleCompletionChart';
+import { FirestoreAdminSetupModal } from './FirestoreAdminSetupModal';
 
 interface AdminDashboardOverviewProps {
   onNavigate: (tab: string, filter?: string) => void;
@@ -58,6 +60,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
   const [rejectModalStudent, setRejectModalStudent] = useState<StudentProfile | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [detailModalStudent, setDetailModalStudent] = useState<StudentProfile | null>(null);
+  const [showFirestoreAdminModal, setShowFirestoreAdminModal] = useState(false);
 
   const congregations = dbService.getCongregations();
   const allStudents = dbService.getAllStudents();
@@ -434,35 +437,44 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
             <BookmarkCheck className="w-3.5 h-3.5 text-[#1e3a5f]" />
             <span>Ferramentas de Gestão Pastoral & Paroquial</span>
           </h3>
-          <button 
-            onClick={async () => {
-              if (window.confirm('Deseja realizar um backup manual de segurança agora? Os dados serão salvos no Firebase Storage e Google Drive.')) {
-                try {
-                  const idToken = await currentUser?.getIdToken();
-                  
-                  setFeedbackMsg({ type: 'success', text: 'Iniciando backup manual em segundo plano...' });
-                  
-                  // Trigger Firestore Snapshot
-                  const snapshotPromise = fetch('/api/admin/backups/trigger', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${idToken}` }
-                  });
-
-                  // Trigger Drive Backup (via local client since it needs Drive auth)
-                  // Note: handleExportToDrive is in ReportsView, but we can call it if we extract it or just rely on server backup
-                  
-                  await snapshotPromise;
-                  setFeedbackMsg({ type: 'success', text: 'Backup de segurança (Cloud Snapshot) concluído com sucesso!' });
-                } catch (err) {
-                  setFeedbackMsg({ type: 'error', text: 'Erro ao processar backup manual.' });
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowFirestoreAdminModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-[10px] font-bold transition border border-amber-200 cursor-pointer"
+            >
+              <ShieldCheck className="w-3 h-3 text-amber-600" />
+              <span>Configurar Admin Firestore</span>
+            </button>
+            <button 
+              onClick={async () => {
+                if (window.confirm('Deseja realizar um backup manual de segurança agora? Os dados serão salvos no Firebase Storage e Google Drive.')) {
+                  try {
+                    const idToken = await auth.currentUser?.getIdToken();
+                    
+                    setFeedbackMsg({ type: 'success', text: 'Iniciando backup manual em segundo plano...' });
+                    
+                    // Trigger Firestore Snapshot
+                    const snapshotPromise = fetch('/api/admin/backups/trigger', {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${idToken}` }
+                    });
+  
+                    // Trigger Drive Backup (via local client since it needs Drive auth)
+                    // Note: handleExportToDrive is in ReportsView, but we can call it if we extract it or just rely on server backup
+                    
+                    await snapshotPromise;
+                    setFeedbackMsg({ type: 'success', text: 'Backup de segurança (Cloud Snapshot) concluído com sucesso!' });
+                  } catch (err) {
+                    setFeedbackMsg({ type: 'error', text: 'Erro ao processar backup manual.' });
+                  }
                 }
-              }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 hover:bg-[#1e3a5f] hover:text-white text-slate-600 text-[10px] font-bold transition border border-slate-200"
-          >
-            <Database className="w-3 h-3" />
-            <span>Backup Manual Agora</span>
-          </button>
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 hover:bg-[#1e3a5f] hover:text-white text-slate-600 text-[10px] font-bold transition border border-slate-200"
+            >
+              <Database className="w-3 h-3" />
+              <span>Backup Manual Agora</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -652,6 +664,33 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
             <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 pt-1 border-t border-slate-100">
               <Download className="w-3 h-3 group-hover:translate-y-0.5 transition" />
               <span>Realizar Backup agora</span>
+            </span>
+          </div>
+
+          {/* Emissão de Certificados */}
+          <div
+            onClick={() => onNavigate('certificados')}
+            className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-purple-500 hover:shadow-sm transition cursor-pointer flex flex-col justify-between space-y-2 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold group-hover:scale-105 transition">
+                <Award className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                Graduação
+              </span>
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 text-xs font-display">
+                Emissão de Certificados
+              </h4>
+              <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">
+                Gere certificados em PDF para alunos que concluíram os módulos e requisitos.
+              </p>
+            </div>
+            <span className="text-[11px] font-bold text-purple-700 flex items-center gap-1 pt-1 border-t border-slate-100">
+              <span>Acessar certificados</span>
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
             </span>
           </div>
 
@@ -872,7 +911,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-500">Localidade:</span>
                       <span className="font-semibold text-slate-700">
-                        {student.city ? `${student.city} - ${student.state || 'RS'}` : 'Paróquia'}
+                        {student.city ? `${student.city} - ${student.state || 'PR'}` : 'Paróquia'}
                       </span>
                     </div>
 
@@ -1350,6 +1389,14 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Firestore First Admin Setup Helper Modal */}
+      {showFirestoreAdminModal && (
+        <FirestoreAdminSetupModal
+          isOpen={showFirestoreAdminModal}
+          onClose={() => setShowFirestoreAdminModal(false)}
+        />
       )}
     </div>
   );

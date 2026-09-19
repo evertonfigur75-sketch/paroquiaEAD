@@ -26,7 +26,7 @@ export const StudentProfileView: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState(studentProfile.avatarUrl || '');
   const [cep, setCep] = useState(studentProfile.cep || '');
   const [city, setCity] = useState(studentProfile.city || '');
-  const [state, setState] = useState(studentProfile.state || 'RS');
+  const [state, setState] = useState(studentProfile.state || 'PR');
   const [neighborhood, setNeighborhood] = useState(studentProfile.neighborhood || '');
   const [street, setStreet] = useState(studentProfile.street || '');
   const [number, setNumber] = useState(studentProfile.number || '');
@@ -191,7 +191,7 @@ export const StudentProfileView: React.FC = () => {
                   type="text"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  placeholder="RS"
+                  placeholder="PR"
                   className="w-20 p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>

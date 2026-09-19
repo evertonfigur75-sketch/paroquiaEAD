@@ -114,6 +114,49 @@ export class DriveService {
     const result = await this.fetchWithAuth(url);
     return result.files || [];
   }
+
+  public fileToBase64(file: File | Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.includes(',') ? result.split(',')[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  public async uploadViaWebhook(webhookUrl: string, file: File | Blob, folderName: string): Promise<string> {
+    const base64 = await this.fileToBase64(file);
+    const fileName = file instanceof File ? file.name : `arquivo-${Date.now()}.jpg`;
+    const mimeType = file.type || 'image/jpeg';
+
+    const payload = {
+      filename: fileName,
+      mimeType: mimeType,
+      folder: folderName,
+      base64: base64,
+    };
+
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8', // Apps Script handles text/plain CORS preflight best
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (data.status === 'success' && data.url) {
+      return data.url;
+    }
+    if (data.url) {
+      return data.url;
+    }
+    throw new Error(data.message || 'Erro ao fazer upload no Google Drive via Webhook');
+  }
 }
 
 export const driveService = DriveService.getInstance();

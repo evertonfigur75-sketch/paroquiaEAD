@@ -634,8 +634,8 @@ export const AdminActivitiesView: React.FC<{ onNavigateToQuizzes?: (activityId: 
                         Organizado em pastas
                       </p>
                       {!googleAccessToken && (
-                        <div className="absolute top-1 right-1">
-                          <AlertCircle className="w-3 h-3 text-amber-500" title="Requer login Google" />
+                        <div className="absolute top-1 right-1" title="Requer login Google">
+                          <AlertCircle className="w-3 h-3 text-amber-500" />
                         </div>
                       )}
                     </div>

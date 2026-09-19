@@ -3,6 +3,8 @@ import { User, StudentProfile, Role } from '../types';
 import { dbService } from '../services/db';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth, requestNotificationPermission } from '../lib/firebase';
+import { isAuthorizedAdminEmail, validateAdminAccess, PASTOR_PRIMARY_EMAIL } from '../lib/adminAuth';
+
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
 
@@ -11,6 +13,8 @@ interface AuthContextType {
   studentProfile: StudentProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isPastorAuthorized: boolean;
+  authorizedAdminEmail: string;
   isStudent: boolean;
   isPending: boolean;
   isRejected: boolean;
@@ -79,22 +83,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setGoogleAccessToken(token);
       
-      // If the user matches an admin email, automatically log them in as admin
-      const adminEmail = 'evertonfigur75@gmail.com';
-      if (result.user.email === adminEmail) {
-        const adminUser = dbService.getAllUsers().find(u => u.role === 'admin');
+      const userEmail = result.user.email;
+      // If the user matches an authorized admin email, log them in as admin and sync to Firestore
+      if (isAuthorizedAdminEmail(userEmail)) {
+        let adminUser = dbService.getAllUsers().find(u => u.role === 'admin');
+        if (!adminUser) {
+          adminUser = dbService.getAdminUser();
+        }
         if (adminUser) {
-          // Ensure admin exists in Firestore 'users' collection for rules to work
-          await dbService.ensureAdminInFirestore(result.user.uid, adminUser);
+          // Ensure admin exists in Firestore 'users' collection with current UID for rules to work
+          await dbService.ensureAdminInFirestore(result.user.uid, {
+            ...adminUser,
+            email: userEmail || PASTOR_PRIMARY_EMAIL,
+            name: result.user.displayName || adminUser.name,
+            avatarUrl: result.user.photoURL || adminUser.avatarUrl,
+          });
           
           dbService.setCurrentUser(adminUser);
           await dbService.init();
           setCurrentUser(adminUser);
-          await dbService.logAuthAttempt(adminEmail, true);
+          await dbService.logAuthAttempt(userEmail || PASTOR_PRIMARY_EMAIL, true);
         }
+        return { success: true };
       }
 
-      return { success: true };
+      // If not the Pastor's email, check if user is a registered student
+      const students = dbService.getAllStudents();
+      const studentMatch = students.find(s => s.email.toLowerCase() === userEmail?.toLowerCase());
+      if (studentMatch) {
+        dbService.setCurrentUser(studentMatch);
+        await dbService.init();
+        setCurrentUser(studentMatch);
+        await dbService.logAuthAttempt(userEmail || 'student', true);
+        return { success: true };
+      }
+
+      // If not authorized as pastor and not registered as student
+      await dbService.logAuthAttempt(userEmail || 'unknown', false, 'Conta Google não possui perfil de catecúmeno nem permissão pastoral');
+      return {
+        success: false,
+        message: `A conta Google (${userEmail}) não é o e-mail pastoral autorizado (${PASTOR_PRIMARY_EMAIL}). Se você for aluno/catequizando, faça sua matrícula primeiro.`
+      };
     } catch (error: any) {
       console.error('Erro no Google Sign-In:', error);
       await dbService.logAuthAttempt('google_popup_fail', false, error.message);
@@ -103,15 +132,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, pass: string) => {
-    const user = await dbService.verifyCredentials(email, pass);
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Verify credentials first
+    const user = await dbService.verifyCredentials(cleanEmail, pass);
     if (!user) {
-      await dbService.logAuthAttempt(email, false, 'Credenciais incorretas');
+      await dbService.logAuthAttempt(cleanEmail, false, 'Credenciais incorretas');
       return { success: false, message: 'E-mail ou senha incorretos. Verifique suas credenciais.' };
     }
+
+    // Strict security check: If user has role 'admin', verify that their email is the authorized pastor email
+    if (user.role === 'admin') {
+      const adminValidation = validateAdminAccess(user.email);
+      if (!adminValidation.allowed) {
+        await dbService.logAuthAttempt(cleanEmail, false, `Tentativa não autorizada de acesso pastoral com o e-mail: ${user.email}`);
+        return {
+          success: false,
+          message: adminValidation.reason || 'Acesso negado: apenas o e-mail do Pastor tem acesso ao painel de administração.'
+        };
+      }
+    }
+
     dbService.setCurrentUser(user);
     await dbService.init(); // Refresh data with new user context
     setCurrentUser(user);
-    await dbService.logAuthAttempt(email, true);
+    await dbService.logAuthAttempt(cleanEmail, true);
     return { success: true };
   };
 
@@ -124,10 +169,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const student = await dbService.registerStudent(data);
-      // Auto-set session so user sees their pending status screen
+      // Auto-set session so user sees their pending status screen immediately
       dbService.setCurrentUser(student);
-      await dbService.init(); // Re-init to load context
       setCurrentUser(student);
+      // Run background context refresh without delaying UI feedback
+      dbService.init().catch(() => {});
       return { success: true, student };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro ao realizar cadastro';
@@ -184,7 +230,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await dbService.changePassword(currentUser.id, newPass);
   };
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isPastorAuthorized = isAuthorizedAdminEmail(currentUser?.email);
+  const isAdmin = Boolean(currentUser && currentUser.role === 'admin' && isPastorAuthorized);
   const isStudent = currentUser?.role === 'student';
   const studentProfile = isStudent ? (currentUser as StudentProfile) : null;
   const isPending = isStudent && studentProfile?.status === 'pending';
@@ -197,6 +244,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         studentProfile,
         isAuthenticated: !!currentUser,
         isAdmin,
+        isPastorAuthorized,
+        authorizedAdminEmail: PASTOR_PRIMARY_EMAIL,
         isStudent,
         isPending,
         isRejected,
