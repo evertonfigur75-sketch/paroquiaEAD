@@ -11,7 +11,11 @@ import {
   StudentProfile,
   WorshipRecord,
   CatechismAssessment,
-  Grade
+  Grade,
+  PublicVideo,
+  PublicAudio,
+  PublicBibleStudy,
+  PublicCalendarEvent
 } from '../types';
 
 export const INITIAL_CONGREGATIONS: Congregation[] = [
@@ -885,5 +889,206 @@ export const INITIAL_DEMO_CATECHISM_ASSESSMENTS: CatechismAssessment[] = [
     grade: 8.0,
     observation: 'Em fase de fixação do significado.',
     updatedBy: 'Pastor Everton Figur',
+  },
+];
+
+// Initial Data for Public Portal (Acesso Geral dos Membros)
+export const INITIAL_PUBLIC_VIDEOS: PublicVideo[] = [
+  {
+    id: 'pvid-1',
+    title: 'Culto Dominical: A Paz que Excede Todo o Entendimento',
+    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    description: 'Pregação gravada na Paróquia sobre Romanos 5. A certeza da justificação pela graça mediante a fé em Cristo Jesus.',
+    speaker: 'Pastor Everton Figur',
+    date: '2026-09-13',
+    category: 'Mensagem de Culto',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800&auto=format&fit=crop&q=80',
+    congregationName: 'CEL São Paulo – Planalto',
+  },
+  {
+    id: 'pvid-2',
+    title: 'Estudo em Vídeo: Os Quatro Pilares da Reforma Luterana',
+    videoUrl: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
+    description: 'Graça Somente, Fé Somente, Escritura Somente e Cristo Somente: o que isso significa para nossa vida diária e familiar.',
+    speaker: 'Pastor Everton Figur',
+    date: '2026-09-06',
+    category: 'Estudo Doutrinário',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&auto=format&fit=crop&q=80',
+    congregationName: 'Paróquia Paroquial',
+  },
+  {
+    id: 'pvid-3',
+    title: 'Mensagem aos Lares: Oração e Fé no Seio Familiar',
+    videoUrl: 'https://www.youtube.com/watch?v=7wtfhZwyrcc',
+    description: 'Como reunir a família em oração diária com o Catecismo Menor e a Bíblia Sagrada.',
+    speaker: 'Pastor Everton Figur',
+    date: '2026-08-30',
+    category: 'Família Cristã',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1519791883288-dc8bd696e667?w=800&auto=format&fit=crop&q=80',
+    congregationName: 'CEL Bom Pastor – São Marcos',
+  },
+];
+
+export const INITIAL_PUBLIC_AUDIOS: PublicAudio[] = [
+  {
+    id: 'paud-1',
+    title: 'Sermão em Áudio: Salmo 23 – O Senhor é o Meu Pastor',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    description: 'Mensagem edificante sobre o cuidado maternal e paternal de Deus para com as Suas ovelhas nas horas mais difíceis.',
+    speaker: 'Pastor Everton Figur',
+    date: '2026-09-17',
+    category: 'Pregação Gravada',
+    durationMinutes: 19,
+    fileSize: '18.2 MB',
+  },
+  {
+    id: 'paud-2',
+    title: 'Meditação Pastoral: A Firme Promessa do Santo Batismo',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    description: 'Reflexão curta sobre como nos lembrar diariamente de que fomos batizados em nome do Pai, do Filho e do Espírito Santo.',
+    speaker: 'Pastor Everton Figur',
+    date: '2026-09-10',
+    category: 'Devocional em Áudio',
+    durationMinutes: 11,
+    fileSize: '10.5 MB',
+  },
+  {
+    id: 'paud-3',
+    title: 'Hino Luterano: Castelo Forte é Nosso Deus',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    description: 'Hino solene da Reforma composto por Martinho Lutero, entoado para edificação do coração dos fiéis.',
+    speaker: 'Música e Louvor Paroquial',
+    date: '2026-09-02',
+    category: 'Hinos & Cânticos',
+    durationMinutes: 5,
+    fileSize: '4.8 MB',
+  },
+];
+
+export const INITIAL_PUBLIC_BIBLE_STUDIES: PublicBibleStudy[] = [
+  {
+    id: 'pstd-1',
+    title: 'A Doutrina dos Dois Reinos segundo a Teologia Luterana',
+    biblicalPassage: 'Romanos 13.1-7 & São João 18.36',
+    category: 'Teologia Luterana',
+    author: 'Pastor Everton Figur',
+    date: '2026-09-15',
+    tags: ['Reforma', 'Cidadania', 'Fé e Política', 'Lutero'],
+    content: `A doutrina dos dois reinos formulada por Martinho Lutero distingue a forma como Deus governa o mundo:
+
+1. O REINO DA MÃO ESQUERDA (O Governo Temporal):
+Deus estabelece autoridades civis, leis e a ordem social para conter a maldade, preservar a paz externa e garantir a justiça comum. O instrumento deste reino é a lei, a razão e, quando necessário, a autoridade civil. Os cristãos servem com fidelidade nesse reino por meio da sua vocação profissional, honrando pais e magistrados.
+
+2. O REINO DA MÃO DIREITA (O Governo Espiritual):
+Deus governa a Igreja por meio do Evangelho, da pregação da Palavra e dos Santos Sacramentos (Batismo e Santa Ceia). Neste reino não há coerção pela força da espada terrena, mas perdão, regeneração do coração pelo Espírito Santo e graça eterna.
+
+CONCLUSÃO PRÁTICA:
+O cristão vive simultaneamente nos dois reinos: é cidadão fiel na sociedade terrena e herdeiro pela fé do Reino celestial eterno. Jamais devemos confundir as duas esferas, mas glorificar a Deus em ambas.`,
+  },
+  {
+    id: 'pstd-2',
+    title: 'O Batismo como Aliança Eterna e Lavagem da Regeneração',
+    biblicalPassage: 'São Mateus 28.19-20 & Tito 3.5-7',
+    category: 'Sacramentos',
+    author: 'Pastor Everton Figur',
+    date: '2026-09-08',
+    tags: ['Batismo', 'Sacramento', 'Catecismo'],
+    content: `No Santo Batismo não é mera água pura, mas água compreendida no mandamento de Deus e ligada com a palavra de Deus:
+
+1. O QUE DEUS REALIZA NO BATISMO?
+O Batismo opera o perdão dos pecados, livra da morte e do diabo e dá a eterna salvação a todos que creem no que dizem as palavras e promessas divinas.
+
+2. COMO A ÁGUA PODE FAZER COISAS TÃO GRANDES?
+Não é a água certamente que as faz, mas a palavra de Deus que está com e junto à água, e a fé que confia nessa palavra de Deus posta na água.
+
+3. O USO DIÁRIO DO BATISMO:
+Lutero ensina que o Batismo significa que o velho Adão em nós deve ser afogado pelo arrependimento diário e morrer com todos os pecados e maus desejos; e, pelo contrário, deve ressurgir dia a dia o novo homem que viva eternamente diante de Deus em justiça e pureza.`,
+  },
+  {
+    id: 'pstd-3',
+    title: 'Como Realizar o Culto Doméstico com Filhos e Jovens',
+    biblicalPassage: 'Deuteronômio 6.4-9 & Salmo 78.1-7',
+    category: 'Família Cristã',
+    author: 'Pastor Everton Figur',
+    date: '2026-08-28',
+    tags: ['Família', 'Oração', 'Culto Doméstico'],
+    content: `O lar cristão é a primeira igreja que a criança e o jovem conhecem. Deus confiou aos pais a sublime vocação de ensinar Seus mandamentos ao levantar, ao deitar e pelo caminho.
+
+Passos sugeridos para um culto doméstico de 10 a 15 minutos:
+1. Invocação: 'Em nome do Pai, e do Filho e do Espírito Santo.'
+2. Cântico de um hino do Hinário Luterano ou louvor conhecido.
+3. Leitura Bíblica curta (1 capítulo ou trecho do Evangelho).
+4. Uma parte do Catecismo Menor (Mandamento, Artigo do Credo ou Petição do Pai-Nosso).
+5. Oração compartilhada: pedidos pelas necessidades da família, da congregação, da pátria e do mundo.
+6. Oração do Pai-Nosso e a Bênção: 'O Senhor te abençoe e te guarde.'`,
+  },
+];
+
+export const INITIAL_PUBLIC_EVENTS: PublicCalendarEvent[] = [
+  {
+    id: 'pevt-1',
+    title: 'Culto Dominical com Santa Ceia',
+    date: '2026-09-27',
+    time: '09:00',
+    location: 'CEL São Paulo – Planalto',
+    category: 'culto',
+    description: 'Culto festivo com celebração do Sacramento do Altar e acolhida de todas as famílias e visitantes da paróquia.',
+    congregationId: 'cel-sao-paulo',
+    congregationName: 'CEL São Paulo – Planalto',
+  },
+  {
+    id: 'pevt-2',
+    title: 'Culto Vespertino da Comunidade',
+    date: '2026-09-27',
+    time: '19:00',
+    location: 'CEL Bom Pastor – São Marcos',
+    category: 'culto',
+    description: 'Culto dominical noturno com hinos de louvor e reflexão na Palavra.',
+    congregationId: 'cel-bom-pastor',
+    congregationName: 'CEL Bom Pastor – São Marcos',
+  },
+  {
+    id: 'pevt-3',
+    title: 'Culto Dominical da Família Cristã',
+    date: '2026-10-04',
+    time: '10:00',
+    location: 'CEL Santíssima Trindade – Sagrada Família',
+    category: 'culto',
+    description: 'Celebração com a comunidade, liturgia luterana e comunhão com Santa Ceia.',
+    congregationId: 'cel-santissima-trindade',
+    congregationName: 'CEL Santíssima Trindade – Sagrada Família',
+  },
+  {
+    id: 'pevt-4',
+    title: 'Estudo Bíblico Paroquial Semanal',
+    date: '2026-10-01',
+    time: '19:30',
+    location: 'Salão Paroquial – Planalto',
+    category: 'estudo',
+    description: 'Estudo temático sobre as Cartas Paulinas e vida cristã. Aberto a todos os membros e interessados.',
+    congregationId: 'all',
+    congregationName: 'Toda a Paróquia (Geral)',
+  },
+  {
+    id: 'pevt-5',
+    title: 'Culto Jovem e Encontro da Juventude (JELB)',
+    date: '2026-10-10',
+    time: '19:00',
+    location: 'CEL Concórdia – Santa Rita',
+    category: 'juventude',
+    description: 'Culto jovem participativo com cânticos contemporâneos, reflexão e comunhão.',
+    congregationId: 'cel-concordia',
+    congregationName: 'CEL Concórdia – Santa Rita',
+  },
+  {
+    id: 'pevt-6',
+    title: 'Almoço Festivo Comunitário da Reforma',
+    date: '2026-10-25',
+    time: '11:30',
+    location: 'Pavilhão Comunitário São Paulo – Planalto',
+    category: 'festa',
+    description: 'Almoço de confraternização anual das congregações da Paróquia Luterana em comemoração ao Mês da Reforma.',
+    congregationId: 'all',
+    congregationName: 'Toda a Paróquia (Geral)',
   },
 ];

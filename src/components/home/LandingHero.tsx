@@ -14,17 +14,25 @@ import {
   CheckCircle2,
   ChevronRight,
   ShieldCheck,
+  Radio,
+  Video,
+  Headphones,
+  Calendar,
 } from 'lucide-react';
 import { dbService } from '../../services/db';
 
 interface LandingHeroProps {
   onOpenLogin: (role?: 'admin' | 'student') => void;
   onOpenRegister: () => void;
+  onOpenPublicPortal?: () => void;
+  onOpenBible?: () => void;
 }
 
 export const LandingHero: React.FC<LandingHeroProps> = ({
   onOpenLogin,
   onOpenRegister,
+  onOpenPublicPortal,
+  onOpenBible,
 }) => {
   const congregations = dbService.getCongregations();
   const { settings } = useAppSettings();
@@ -52,6 +60,30 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {onOpenBible && (
+              <button
+                onClick={onOpenBible}
+                className="px-3 py-1.5 rounded-xl font-bold text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 transition flex items-center gap-1.5 cursor-pointer border border-amber-400/30 shadow-2xs"
+                title="Abrir Painel da Bíblia Sagrada & Citações"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Bíblia Sagrada</span>
+                <span className="sm:hidden">Bíblia</span>
+              </button>
+            )}
+
+            {onOpenPublicPortal && (
+              <button
+                onClick={onOpenPublicPortal}
+                className="px-3 py-1.5 rounded-xl font-bold text-xs bg-white/10 hover:bg-white/20 text-white transition flex items-center gap-1.5 cursor-pointer border border-white/20"
+                title="Acessar vídeos, áudios, estudos e calendário sem login"
+              >
+                <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <span className="hidden sm:inline">Portal dos Membros (Livre)</span>
+                <span className="sm:hidden">Acesso Geral</span>
+              </button>
+            )}
+
             <PWAInstallButton compact={true} />
             <button
               id="btn-nav-login"
@@ -145,11 +177,65 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                 <span>Solicitar Participação</span>
               </button>
             </div>
+
+            {/* Acesso Geral dos Membros (Sem Login) */}
+            {onOpenPublicPortal && (
+              <div className="pt-3">
+                <button
+                  onClick={onOpenPublicPortal}
+                  className="w-full p-4 rounded-2xl bg-gradient-to-r from-emerald-600/90 to-teal-700/90 hover:from-emerald-500 hover:to-teal-600 text-white transition shadow-md flex items-center justify-between gap-4 border border-emerald-400/40 cursor-pointer group active:scale-98"
+                >
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <Radio className="w-5 h-5 text-white animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm sm:text-base text-white">
+                          Acesso Geral da Paróquia (Entrar Sem Login)
+                        </span>
+                        <span className="bg-white/25 text-emerald-100 text-[10px] uppercase font-black px-2 py-0.5 rounded-full">
+                          Livre
+                        </span>
+                      </div>
+                      <p className="text-xs text-emerald-100 font-normal">
+                        Vídeos dos cultos, mensagens gravadas em áudio, estudos bíblicos e calendário paroquial
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-white group-hover:translate-x-1 transition shrink-0" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Highlight Pillars */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Card do Portal Público */}
+          <div
+            onClick={onOpenPublicPortal}
+            className="p-5 rounded-2xl bg-gradient-to-b from-emerald-50 to-white border border-emerald-200 shadow-sm space-y-2 hover:border-emerald-400 transition cursor-pointer group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <Radio className="w-5 h-5" />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-slate-900 text-base font-display group-hover:text-emerald-700 transition">
+                Portal dos Membros
+              </h3>
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800">
+                Sem Login
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Acesso livre para toda a comunidade: assista aos vídeos, ouça áudios de pregações, leia estudos e veja o calendário.
+            </p>
+            <span className="text-[11px] font-bold text-emerald-700 block pt-1 group-hover:underline">
+              Acessar Conteúdos &rarr;
+            </span>
+          </div>
+
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
             <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-amber-700" />
@@ -180,7 +266,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
               <CalendarCheck className="w-5 h-5 text-emerald-700" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base font-display">24 Cultos (Confirmatório)</h3>
+            <h3 className="font-bold text-slate-900 text-base font-display">24 Cultos (Confirmandos)</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Envio prático do resumo da pregação e foto pelo celular para validação dos 24 cultos diretamente pelo Pastor Everton Figur.
             </p>

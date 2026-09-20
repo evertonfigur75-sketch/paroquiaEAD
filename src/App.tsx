@@ -35,6 +35,9 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { DirectMessaging } from './components/common/DirectMessaging';
+import { PublicPortalView } from './components/portal/PublicPortalView';
+import { BibleAccessPanel } from './components/bible/BibleAccessPanel';
+import { BibleFloatingLauncher } from './components/bible/BibleFloatingLauncher';
 
 const AppContent: React.FC = () => {
   const { currentUser, isAdmin, studentProfile, logout, refreshUser } = useAuth();
@@ -45,22 +48,48 @@ const AppContent: React.FC = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [showAdminProfileModal, setShowAdminProfileModal] = useState(false);
+  const [isPublicPortalOpen, setIsPublicPortalOpen] = useState(false);
+
+  // Bible panel state
+  const [isBibleOpen, setIsBibleOpen] = useState<boolean>(false);
+  const [bibleCitation, setBibleCitation] = useState<string>('');
+
+  const handleOpenBible = (citation?: string) => {
+    if (citation) {
+      setBibleCitation(citation);
+    }
+    setIsBibleOpen(true);
+  };
 
   // Student navigation
   const [studentTab, setStudentTab] = useState<string>('dashboard');
   const [activeActivityId, setActiveActivityId] = useState<string | null>(null);
 
-  // If user is not logged in, render the landing page
+  // If user is not logged in, render either the Public Portal or the Landing Page
   if (!currentUser) {
     return (
       <>
-        <LandingHero
-          onOpenLogin={(role = 'admin') => {
-            setLoginRole(role);
-            setShowLoginModal(true);
-          }}
-          onOpenRegister={() => setShowRegisterModal(true)}
-        />
+        {isPublicPortalOpen ? (
+          <PublicPortalView
+            onBackToLanding={() => setIsPublicPortalOpen(false)}
+            onOpenLogin={(role = 'admin') => {
+              setLoginRole(role);
+              setShowLoginModal(true);
+            }}
+            onOpenRegister={() => setShowRegisterModal(true)}
+            onOpenBible={handleOpenBible}
+          />
+        ) : (
+          <LandingHero
+            onOpenLogin={(role = 'admin') => {
+              setLoginRole(role);
+              setShowLoginModal(true);
+            }}
+            onOpenRegister={() => setShowRegisterModal(true)}
+            onOpenPublicPortal={() => setIsPublicPortalOpen(true)}
+            onOpenBible={() => handleOpenBible()}
+          />
+        )}
 
         {showLoginModal && (
           <LoginModal
@@ -106,9 +135,42 @@ const AppContent: React.FC = () => {
           />
         )}
 
+        <BibleAccessPanel
+          isOpen={isBibleOpen}
+          onClose={() => setIsBibleOpen(false)}
+          initialCitation={bibleCitation}
+        />
+        <BibleFloatingLauncher
+          isOpen={isBibleOpen}
+          onOpen={() => handleOpenBible()}
+        />
+
         <NotificationToast />
         <OfflineIndicator />
         <PushNotificationManager />
+      </>
+    );
+  }
+
+  // If logged-in user wants to view the public portal
+  if (isPublicPortalOpen) {
+    return (
+      <>
+        <PublicPortalView
+          onBackToLanding={() => setIsPublicPortalOpen(false)}
+          onOpenBible={handleOpenBible}
+        />
+        <BibleAccessPanel
+          isOpen={isBibleOpen}
+          onClose={() => setIsBibleOpen(false)}
+          initialCitation={bibleCitation}
+        />
+        <BibleFloatingLauncher
+          isOpen={isBibleOpen}
+          onOpen={() => handleOpenBible()}
+        />
+        <NotificationToast />
+        <OfflineIndicator />
       </>
     );
   }
@@ -120,6 +182,8 @@ const AppContent: React.FC = () => {
         <AppHeader
           title="Plataforma de Ensino Luterano"
           onOpenProfile={() => setShowAdminProfileModal(true)}
+          onOpenPublicPortal={() => setIsPublicPortalOpen(true)}
+          onOpenBible={() => handleOpenBible()}
         />
 
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
@@ -132,6 +196,16 @@ const AppContent: React.FC = () => {
             onClose={() => setShowAdminProfileModal(false)}
           />
         )}
+
+        <BibleAccessPanel
+          isOpen={isBibleOpen}
+          onClose={() => setIsBibleOpen(false)}
+          initialCitation={bibleCitation}
+        />
+        <BibleFloatingLauncher
+          isOpen={isBibleOpen}
+          onOpen={() => handleOpenBible()}
+        />
 
         <NotificationToast />
         <OfflineIndicator />
@@ -173,11 +247,22 @@ const AppContent: React.FC = () => {
         <AppHeader
           title="Plataforma de Ensino Luterano"
           onOpenProfile={() => {}}
+          onOpenBible={() => handleOpenBible()}
         />
 
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8">
           <PendingApprovalNotice />
         </main>
+
+        <BibleAccessPanel
+          isOpen={isBibleOpen}
+          onClose={() => setIsBibleOpen(false)}
+          initialCitation={bibleCitation}
+        />
+        <BibleFloatingLauncher
+          isOpen={isBibleOpen}
+          onOpen={() => handleOpenBible()}
+        />
 
         <NotificationToast />
         <OfflineIndicator />
@@ -221,6 +306,7 @@ const AppContent: React.FC = () => {
     { id: 'curso', label: 'Aulas e Módulos', icon: BookOpen },
     ...(isConfirmatorio ? [{ id: 'cultos', label: '24 Cultos', icon: CalendarCheck }] : []),
     { id: 'catecismo', label: 'Catecismo', icon: Bookmark },
+    { id: 'biblia', label: 'Bíblia Sagrada', icon: BookOpen },
     { id: 'notas', label: 'Boletim', icon: Award },
     { id: 'comunidade', label: 'Devoções e Avisos', icon: HeartHandshake },
     { id: 'mensagens', label: 'Dúvidas ao Pastor', icon: MessageSquare },
@@ -232,6 +318,8 @@ const AppContent: React.FC = () => {
       <AppHeader
         title="Plataforma de Ensino Luterano"
         onOpenProfile={() => setStudentTab('perfil')}
+        onOpenPublicPortal={() => setIsPublicPortalOpen(true)}
+        onOpenBible={() => handleOpenBible()}
       />
 
       {/* Desktop Secondary Navigation Sub-bar */}
@@ -243,7 +331,13 @@ const AppContent: React.FC = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => setStudentTab(item.id)}
+                onClick={() => {
+                  if (item.id === 'biblia') {
+                    handleOpenBible();
+                  } else {
+                    setStudentTab(item.id);
+                  }
+                }}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
                   isActive
                     ? 'bg-[#1e3a5f] text-white shadow-xs'
@@ -355,6 +449,17 @@ const AppContent: React.FC = () => {
               </button>
 
               <button
+                onClick={() => handleOpenBible()}
+                className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between text-xs font-bold text-slate-800 transition"
+              >
+                <div className="flex items-center gap-2.5">
+                  <BookOpen className="w-4 h-4 text-amber-600" />
+                  <span>Bíblia Sagrada & Consulta de Citações</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+
+              <button
                 onClick={() => setStudentTab('perfil')}
                 className="w-full p-3 rounded-2xl hover:bg-slate-50 flex items-center justify-between text-xs font-bold text-slate-800 transition"
               >
@@ -395,6 +500,16 @@ const AppContent: React.FC = () => {
         currentTab={studentTab}
         isConfirmatorio={isConfirmatorio}
         onSelectTab={(tab) => setStudentTab(tab)}
+      />
+
+      <BibleAccessPanel
+        isOpen={isBibleOpen}
+        onClose={() => setIsBibleOpen(false)}
+        initialCitation={bibleCitation}
+      />
+      <BibleFloatingLauncher
+        isOpen={isBibleOpen}
+        onOpen={() => handleOpenBible()}
       />
 
       <NotificationToast />

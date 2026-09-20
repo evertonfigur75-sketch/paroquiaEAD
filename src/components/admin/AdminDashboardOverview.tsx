@@ -37,11 +37,16 @@ import {
   Terminal,
   HardDrive,
   Activity as ActivityIcon,
+  Camera,
+  Sliders,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAppSettings } from '../../context/AppSettingsContext';
+import { formatImageUrl } from '../../lib/imageUtils';
 import { auth } from '../../lib/firebase';
 import { ModuleCompletionChart } from './ModuleCompletionChart';
 import { FirestoreAdminSetupModal } from './FirestoreAdminSetupModal';
+import { AdminProfileModal } from './AdminProfileModal';
 
 interface AdminDashboardOverviewProps {
   onNavigate: (tab: string, filter?: string) => void;
@@ -55,6 +60,9 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
   onDataChanged,
 }) => {
   const { currentUser } = useAuth();
+  const { settings } = useAppSettings();
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileModalTab, setProfileModalTab] = useState<'profile' | 'app_details'>('profile');
   const [selectedCongregation, setSelectedCongregation] = useState<string>('all');
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [rejectModalStudent, setRejectModalStudent] = useState<StudentProfile | null>(null);
@@ -175,18 +183,76 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
     <div className="space-y-6 pb-12">
       {/* Pastor Greeting Banner */}
       <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-[#1e3a5f] to-slate-900 text-white p-6 shadow-xl relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Painel Geral do Administrador</span>
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            {/* Pastor Profile Photo with Quick Upload Button */}
+            <div className="relative group shrink-0">
+              <img
+                src={formatImageUrl(currentUser?.avatarUrl) || 'https://lh3.googleusercontent.com/d/1qpNzrvjmC8qaI5VpYcm3nKoRi7uDzRpy'}
+                alt={currentUser?.name || 'Pastor Everton Figur'}
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400 shadow-md bg-slate-800"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileModalTab('profile');
+                  setShowProfileModal(true);
+                }}
+                className="absolute inset-0 rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-[10px] font-bold text-white cursor-pointer"
+                title="Alterar Foto de Perfil"
+              >
+                <Camera className="w-5 h-5 text-amber-300 mb-0.5" />
+                <span>Alterar</span>
+              </button>
+              <div
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-xs"
+                title="Administrador Oficial"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+              </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold font-display">
-              Pastor Everton Figur
-            </h2>
-            <p className="text-xs text-amber-200">
-              Paróquia Evangélica Luterana • Ensino Confirmatório & Profissão de Fé
-            </p>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Painel Geral do Administrador</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold font-display">
+                {currentUser?.name || 'Pastor Everton Figur'}
+              </h2>
+              <p className="text-xs text-amber-200">
+                {currentUser?.parishName || settings.parishName || 'Paróquia Evangélica Luterana São Paulo'} • {settings.appSubtitle || 'Ensino Confirmatório & Profissão de Fé'}
+              </p>
+
+              {/* Action Buttons to Edit Profile Photo & App Details */}
+              <div className="flex flex-wrap items-center gap-2 pt-1.5">
+                <button
+                  type="button"
+                  id="btn-banner-edit-profile-photo"
+                  onClick={() => {
+                    setProfileModalTab('profile');
+                    setShowProfileModal(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Alterar Foto & Perfil</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="btn-banner-edit-app-details"
+                  onClick={() => {
+                    setProfileModalTab('app_details');
+                    setShowProfileModal(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/20 shadow-xs cursor-pointer active:scale-95"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Editar Detalhes do App</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Congregation quick filter */}
@@ -1396,6 +1462,18 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
         <FirestoreAdminSetupModal
           isOpen={showFirestoreAdminModal}
           onClose={() => setShowFirestoreAdminModal(false)}
+        />
+      )}
+
+      {/* Admin Profile & App Details Modal */}
+      {showProfileModal && (
+        <AdminProfileModal
+          isOpen={showProfileModal}
+          onClose={() => {
+            setShowProfileModal(false);
+            onDataChanged?.();
+          }}
+          initialTab={profileModalTab}
         />
       )}
     </div>

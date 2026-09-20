@@ -41,9 +41,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const { login, googleSignIn } = useAuth();
   const [activeTab, setActiveTab] = useState<'admin' | 'student'>(initialRole);
 
-  // Admin credentials state (prefilled for instant access)
-  const [adminEmail, setAdminEmail] = useState('evertonfigur75@gmail.com');
-  const [adminPassword, setAdminPassword] = useState('Pastor#75');
+  // Admin credentials state (inputs limpos sem credenciais preenchidas)
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
 
   // Student credentials state
@@ -181,7 +181,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
                     <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80"
+                      src="https://lh3.googleusercontent.com/d/1qpNzrvjmC8qaI5VpYcm3nKoRi7uDzRpy"
                       alt="Pastor Everton Figur"
                       className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-500 shadow-sm"
                     />
@@ -204,11 +204,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </h3>
 
                     <p className="text-xs font-semibold text-amber-800">
-                      Pastor da Paróquia Evangélica Luterana
+                      Pastor da Paróquia Evangélica Luterana São Paulo
                     </p>
 
                     <p className="text-[11px] text-slate-600 truncate">
-                      evertonfigur75@gmail.com • (55) 99999-0000
+                      evertonfigur75@gmail.com • (46) 99971-0792
                     </p>
                   </div>
                 </div>
@@ -234,32 +234,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </div>
               </div>
 
-              {/* Login Form for Pastor Everton Figur */}
+              {/* Login Form for Administrator */}
               <div className="space-y-4">
-                {/* One-Click Quick Access Badge */}
-                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300/80 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-amber-950">Acesso Pastoral Oficial:</p>
-                    <p className="text-[11px] text-amber-800">
-                      E-mail: <span className="font-mono font-semibold">evertonfigur75@gmail.com</span>
-                    </p>
-                    <p className="text-[11px] text-amber-800">
-                      Senha padrão: <span className="font-mono font-semibold">Pastor#75</span>
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdminEmail('evertonfigur75@gmail.com');
-                      setAdminPassword('Pastor#75');
-                      setError(null);
-                    }}
-                    className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-xs transition"
-                  >
-                    Auto-Preencher
-                  </button>
-                </div>
-
                 <form onSubmit={handleAdminSubmit} className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
@@ -273,6 +249,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                         required
                         value={adminEmail}
                         onChange={(e) => setAdminEmail(e.target.value)}
+                        placeholder="Digite seu e-mail de administrador"
+                        autoComplete="username"
                         className="w-full pl-9 pr-3 py-2.5 rounded-2xl border border-slate-300 text-sm font-medium text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
                       />
                     </div>
@@ -292,6 +270,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                         required
                         value={adminPassword}
                         onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="Digite sua senha de acesso"
+                        autoComplete="current-password"
                         className="w-full pl-9 pr-10 py-2.5 rounded-2xl border border-slate-300 text-sm font-medium text-slate-800 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
                       />
                       <button

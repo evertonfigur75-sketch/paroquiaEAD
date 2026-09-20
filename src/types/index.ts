@@ -40,6 +40,8 @@ export interface User {
   courseType?: CourseType;
   congregationId?: string;
   congregationName?: string;
+  parishName?: string;
+  churchBody?: string;
   status?: RequestStatus;
   statusReason?: string;
   passwordHash: string;
@@ -297,6 +299,12 @@ export interface StudyText {
 export interface AppSettings {
   appName: string;
   appSubtitle: string;
+  parishName?: string;
+  churchBody?: string;
+  pastorName?: string;
+  pastorPhone?: string;
+  pastorEmail?: string;
+  pastorAvatarUrl?: string;
   logoType: 'luther_rose' | 'custom_upload' | 'url';
   logoUrl?: string;
   primaryColor: string; // Hex color code e.g. #1e3a5f
@@ -336,5 +344,54 @@ export interface AuditLog {
   action: string;
   details: any;
   timestamp: string;
+}
+
+// Portal Comunitário / Acesso Geral (Sem Login)
+export interface PublicVideo {
+  id: string;
+  title: string;
+  videoUrl: string;
+  description: string;
+  speaker: string;
+  date: string;
+  category: string;
+  thumbnailUrl?: string;
+  congregationName?: string;
+}
+
+export interface PublicAudio {
+  id: string;
+  title: string;
+  audioUrl: string;
+  description: string;
+  speaker: string;
+  date: string;
+  category: string;
+  durationMinutes?: number;
+  fileSize?: string;
+}
+
+export interface PublicBibleStudy {
+  id: string;
+  title: string;
+  biblicalPassage: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  tags?: string[];
+  downloadUrl?: string;
+}
+
+export interface PublicCalendarEvent {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  category: 'culto' | 'estudo' | 'reuniao' | 'juventude' | 'festa' | 'geral';
+  description: string;
+  congregationId?: string;
+  congregationName?: string;
 }
 

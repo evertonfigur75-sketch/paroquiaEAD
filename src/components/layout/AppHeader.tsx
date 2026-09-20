@@ -4,14 +4,22 @@ import { useAppSettings } from '../../context/AppSettingsContext';
 import { AppLogo } from '../common/AppLogo';
 import { PWAInstallButton } from '../pwa/PWAInstallButton';
 import { NotificationCenter } from '../student/NotificationCenter';
-import { LogOut, User, ShieldCheck, Bell } from 'lucide-react';
+import { LogOut, User, ShieldCheck, Bell, Radio, BookOpen } from 'lucide-react';
+import { formatImageUrl } from '../../lib/imageUtils';
 
 interface AppHeaderProps {
   title?: string;
   onOpenProfile?: () => void;
+  onOpenPublicPortal?: () => void;
+  onOpenBible?: () => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ title, onOpenProfile }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({
+  title,
+  onOpenProfile,
+  onOpenPublicPortal,
+  onOpenBible,
+}) => {
   const { currentUser, isAdmin, logout } = useAuth();
   const { settings } = useAppSettings();
 
@@ -50,6 +58,28 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, onOpenProfile }) =>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {onOpenBible && (
+            <button
+              onClick={onOpenBible}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 transition text-xs font-semibold flex items-center gap-1.5 cursor-pointer border border-amber-400/30 shadow-2xs"
+              title="Abrir Painel da Bíblia Sagrada & Citações"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Bíblia</span>
+            </button>
+          )}
+
+          {onOpenPublicPortal && (
+            <button
+              onClick={onOpenPublicPortal}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-xs font-semibold flex items-center gap-1.5 text-white cursor-pointer border border-white/15"
+              title="Abrir Portal Público dos Membros"
+            >
+              <Radio className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Portal dos Membros</span>
+            </button>
+          )}
+
           <PWAInstallButton compact={true} />
           
           {!isAdmin && currentUser && <NotificationCenter />}
@@ -63,7 +93,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, onOpenProfile }) =>
           >
             {currentUser?.avatarUrl ? (
               <img
-                src={currentUser.avatarUrl}
+                src={formatImageUrl(currentUser.avatarUrl)}
                 alt={currentUser.name}
                 className="w-7 h-7 rounded-full object-cover border border-amber-400"
               />

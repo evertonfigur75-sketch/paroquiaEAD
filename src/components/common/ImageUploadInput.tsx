@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Camera, Image as ImageIcon, Upload, X, Check } from 'lucide-react';
+import { Camera, Image as ImageIcon, Upload, X, Check, Link as LinkIcon } from 'lucide-react';
+import { formatImageUrl } from '../../lib/imageUtils';
 
 interface ImageUploadInputProps {
   label: string;
@@ -109,7 +110,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
             }`}
           >
             <img
-              src={value}
+              src={formatImageUrl(value)}
               alt="Prévia selecionada"
               className="w-full h-full object-cover"
             />
@@ -117,14 +118,14 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute -top-2 -right-2 p-1.5 rounded-full bg-red-600 text-white shadow-md hover:bg-red-700 active:scale-95 transition"
+            className="absolute -top-2 -right-2 p-1.5 rounded-full bg-red-600 text-white shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer"
             title="Remover foto"
           >
             <X className="w-4 h-4" />
           </button>
           <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600 font-medium">
             <Check className="w-3.5 h-3.5" />
-            <span>Foto carregada com sucesso</span>
+            <span>Foto pronta para salvar</span>
           </div>
         </div>
       ) : (
@@ -134,21 +135,37 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
             <button
               type="button"
               onClick={() => cameraInputRef.current?.click()}
-              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-98 transition text-xs font-medium shadow-sm"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-98 transition text-xs font-medium shadow-sm cursor-pointer"
             >
               <Camera className="w-4 h-4 text-amber-600" />
-              <span>Usar Câmera</span>
+              <span>Tirar Foto</span>
             </button>
 
             {/* Gallery / Files input */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-98 transition text-xs font-medium shadow-sm"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-98 transition text-xs font-medium shadow-sm cursor-pointer"
             >
-              <ImageIcon className="w-4 h-4 text-sky-600" />
-              <span>Galeria / Arquivos</span>
+              <Upload className="w-4 h-4 text-sky-600" />
+              <span>Enviar Arquivo</span>
             </button>
+          </div>
+
+          {/* Optional Direct URL / Google Drive link */}
+          <div className="pt-1">
+            <div className="relative">
+              <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+              <input
+                type="url"
+                placeholder="Ou cole o link da foto (Web ou Google Drive)..."
+                onChange={(e) => {
+                  const val = e.target.value.trim();
+                  if (val) onChange(formatImageUrl(val));
+                }}
+                className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              />
+            </div>
           </div>
 
           <input

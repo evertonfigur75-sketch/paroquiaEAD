@@ -3,6 +3,7 @@ import { useAppSettings } from '../../context/AppSettingsContext';
 import { AppSettings } from '../../types';
 import { dbService, DEFAULT_APP_SETTINGS } from '../../services/db';
 import { LutherRoseIcon } from '../common/LutherRoseIcon';
+import { formatImageUrl } from '../../lib/imageUtils';
 import {
   Palette,
   Image,
@@ -78,6 +79,21 @@ export const AdminCustomizationView: React.FC = () => {
   const [appSubtitle, setAppSubtitle] = useState(
     settings.appSubtitle || DEFAULT_APP_SETTINGS.appSubtitle
   );
+  const [parishName, setParishName] = useState(
+    settings.parishName || DEFAULT_APP_SETTINGS.parishName
+  );
+  const [churchBody, setChurchBody] = useState(
+    settings.churchBody || DEFAULT_APP_SETTINGS.churchBody
+  );
+  const [pastorName, setPastorName] = useState(
+    settings.pastorName || DEFAULT_APP_SETTINGS.pastorName
+  );
+  const [pastorPhone, setPastorPhone] = useState(
+    settings.pastorPhone || DEFAULT_APP_SETTINGS.pastorPhone
+  );
+  const [pastorAvatarUrl, setPastorAvatarUrl] = useState(
+    settings.pastorAvatarUrl || DEFAULT_APP_SETTINGS.pastorAvatarUrl
+  );
   const [logoType, setLogoType] = useState<'luther_rose' | 'custom_upload' | 'url'>(
     settings.logoType || 'luther_rose'
   );
@@ -94,8 +110,8 @@ export const AdminCustomizationView: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 3 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 3MB.');
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB.');
       return;
     }
 
@@ -129,22 +145,32 @@ export const AdminCustomizationView: React.FC = () => {
     const updated: AppSettings = {
       appName: appName.trim(),
       appSubtitle: appSubtitle.trim(),
+      parishName: parishName.trim(),
+      churchBody: churchBody.trim(),
+      pastorName: pastorName.trim(),
+      pastorPhone: pastorPhone.trim(),
+      pastorAvatarUrl: formatImageUrl(pastorAvatarUrl.trim()),
       logoType,
-      logoUrl: logoType === 'luther_rose' ? '' : logoUrl.trim(),
+      logoUrl: logoType === 'luther_rose' ? '' : formatImageUrl(logoUrl.trim()),
       primaryColor,
       accentColor,
     };
 
     await updateSettings(updated);
-    setFeedback('Identidade visual e branding atualizados com sucesso!');
+    setFeedback('Identidade visual, paróquia e branding atualizados com sucesso!');
     setTimeout(() => setFeedback(null), 4000);
   };
 
   const handleResetToDefault = async () => {
-    if (confirm('Deseja restaurar as cores, logo e nome originais da plataforma?')) {
+    if (confirm('Deseja restaurar as cores, logo e dados originais da plataforma?')) {
       await resetSettings();
       setAppName(DEFAULT_APP_SETTINGS.appName);
       setAppSubtitle(DEFAULT_APP_SETTINGS.appSubtitle);
+      setParishName(DEFAULT_APP_SETTINGS.parishName);
+      setChurchBody(DEFAULT_APP_SETTINGS.churchBody);
+      setPastorName(DEFAULT_APP_SETTINGS.pastorName);
+      setPastorPhone(DEFAULT_APP_SETTINGS.pastorPhone);
+      setPastorAvatarUrl(DEFAULT_APP_SETTINGS.pastorAvatarUrl);
       setLogoType('luther_rose');
       setLogoUrl('');
       setPrimaryColor(DEFAULT_APP_SETTINGS.primaryColor);
@@ -247,6 +273,62 @@ export const AdminCustomizationView: React.FC = () => {
                 <span className="text-[10px] text-slate-400 mt-0.5 block">
                   Exibido abaixo do logotipo e na página de boas-vindas dos alunos.
                 </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Paróquia Oficial
+                  </label>
+                  <input
+                    type="text"
+                    value={parishName}
+                    onChange={(e) => setParishName(e.target.value)}
+                    placeholder="Paróquia Evangélica Luterana São Paulo"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-slate-800 outline-hidden text-xs font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Denominação / Igreja
+                  </label>
+                  <input
+                    type="text"
+                    value={churchBody}
+                    onChange={(e) => setChurchBody(e.target.value)}
+                    placeholder="Igreja Evangélica Luterana do Brasil"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-slate-800 outline-hidden text-xs font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Pastor Titular / Administrador
+                  </label>
+                  <input
+                    type="text"
+                    value={pastorName}
+                    onChange={(e) => setPastorName(e.target.value)}
+                    placeholder="Pastor Everton Figur"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-slate-800 outline-hidden text-xs font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Telefone / WhatsApp Pastoral
+                  </label>
+                  <input
+                    type="text"
+                    value={pastorPhone}
+                    onChange={(e) => setPastorPhone(e.target.value)}
+                    placeholder="(46) 99971-0792"
+                    className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-slate-800 outline-hidden text-xs font-medium"
+                  />
+                </div>
               </div>
             </div>
           </div>

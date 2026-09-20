@@ -241,6 +241,18 @@ export const AdminDashboard: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('personalizacao')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'personalizacao'
+                ? 'bg-[#1e3a5f] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5 text-amber-500" />
+            <span>Personalização & App</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('arquivos')}
             className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'arquivos'

@@ -47,7 +47,11 @@ import {
   ParochialDocument,
   DocumentStatus,
   DirectMessage,
-  AuditLog
+  AuditLog,
+  PublicVideo,
+  PublicAudio,
+  PublicBibleStudy,
+  PublicCalendarEvent
 } from '../types';
 
 import {
@@ -65,6 +69,10 @@ import {
   INITIAL_DEMO_WORSHIPS,
   INITIAL_DEMO_GRADES,
   INITIAL_DEMO_CATECHISM_ASSESSMENTS,
+  INITIAL_PUBLIC_VIDEOS,
+  INITIAL_PUBLIC_AUDIOS,
+  INITIAL_PUBLIC_BIBLE_STUDIES,
+  INITIAL_PUBLIC_EVENTS,
 } from './seedData';
 
 // Cryptographic hash for passwords (SHA-256 with salt)
@@ -108,6 +116,12 @@ const CURRENT_USER_KEY = 'pel_current_user_session';
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   appName: 'Plataforma de Ensino Luterano',
   appSubtitle: 'Ensino Confirmatório e Profissão de Fé',
+  parishName: 'Paróquia Evangélica Luterana São Paulo',
+  churchBody: 'Igreja Evangélica Luterana do Brasil',
+  pastorName: 'Pastor Everton Figur',
+  pastorPhone: '(46) 99971-0792',
+  pastorEmail: 'evertonfigur75@gmail.com',
+  pastorAvatarUrl: 'https://lh3.googleusercontent.com/d/1qpNzrvjmC8qaI5VpYcm3nKoRi7uDzRpy',
   logoType: 'custom_upload',
   logoUrl: '/logo.jpg',
   primaryColor: '#1e3a5f',
@@ -135,6 +149,10 @@ export interface AppDatabase {
   activityDrafts: ActivityDraft[];
   messages: DirectMessage[];
   auditLogs: AuditLog[];
+  publicVideos: PublicVideo[];
+  publicAudios: PublicAudio[];
+  publicBibleStudies: PublicBibleStudy[];
+  publicEvents: PublicCalendarEvent[];
 }
 
 class DatabaseService {
@@ -143,7 +161,45 @@ class DatabaseService {
   private driveFolderId: string | null = null;
 
   constructor() {
-    this.dbLocal = this.createDefaultDatabase();
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      if (saved) {
+        this.dbLocal = JSON.parse(saved);
+        // Garantir arrays do portal público
+        if (!this.dbLocal.publicVideos || this.dbLocal.publicVideos.length === 0) {
+          this.dbLocal.publicVideos = [...INITIAL_PUBLIC_VIDEOS];
+        }
+        if (!this.dbLocal.publicAudios || this.dbLocal.publicAudios.length === 0) {
+          this.dbLocal.publicAudios = [...INITIAL_PUBLIC_AUDIOS];
+        }
+        if (!this.dbLocal.publicBibleStudies || this.dbLocal.publicBibleStudies.length === 0) {
+          this.dbLocal.publicBibleStudies = [...INITIAL_PUBLIC_BIBLE_STUDIES];
+        }
+        if (!this.dbLocal.publicEvents || this.dbLocal.publicEvents.length === 0) {
+          this.dbLocal.publicEvents = [...INITIAL_PUBLIC_EVENTS];
+        }
+        // Migração e garantia de dados atualizados do Pastor e Paróquia
+        const admin = this.getAdminUser();
+        if (admin) {
+          if (!admin.phone || admin.phone === '(55) 99999-0000') {
+            admin.phone = '(46) 99971-0792';
+          }
+          if (!admin.parishName) {
+            admin.parishName = 'Paróquia Evangélica Luterana São Paulo';
+          }
+          if (!admin.churchBody) {
+            admin.churchBody = 'Igreja Evangélica Luterana do Brasil';
+          }
+          if (!admin.avatarUrl || admin.avatarUrl.includes('unsplash')) {
+            admin.avatarUrl = 'https://lh3.googleusercontent.com/d/1qpNzrvjmC8qaI5VpYcm3nKoRi7uDzRpy';
+          }
+        }
+      } else {
+        this.dbLocal = this.createDefaultDatabase();
+      }
+    } catch {
+      this.dbLocal = this.createDefaultDatabase();
+    }
   }
 
   public async init(): Promise<void> {
@@ -286,15 +342,17 @@ class DatabaseService {
       name: 'Pastor Everton Figur',
       email: 'evertonfigur75@gmail.com',
       role: 'admin',
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
+      avatarUrl: 'https://lh3.googleusercontent.com/d/1qpNzrvjmC8qaI5VpYcm3nKoRi7uDzRpy',
       createdAt: new Date().toISOString(),
       // Senha temporária segura para primeiro acesso: Pastor#75
       passwordHash: 'ab2b376f4da37dbddfe91725e5cd5413c1767d08788ed94b2d8a849d4e0d7c28',
       salt: 'pastor_everton_salt',
-      phone: '(55) 99999-0000',
+      phone: '(46) 99971-0792',
       city: 'Planalto',
       state: 'PR',
       district: 'Distrito Parque do Iguaçu',
+      parishName: 'Paróquia Evangélica Luterana São Paulo',
+      churchBody: 'Igreja Evangélica Luterana do Brasil',
     };
 
     return {
@@ -318,6 +376,10 @@ class DatabaseService {
       activityDrafts: [],
       messages: [],
       auditLogs: [],
+      publicVideos: [...INITIAL_PUBLIC_VIDEOS],
+      publicAudios: [...INITIAL_PUBLIC_AUDIOS],
+      publicBibleStudies: [...INITIAL_PUBLIC_BIBLE_STUDIES],
+      publicEvents: [...INITIAL_PUBLIC_EVENTS],
     };
   }
 
@@ -1681,6 +1743,146 @@ class DatabaseService {
     const otherMessages = this.dbLocal.messages.filter(m => !incomingStudentIds.has(m.studentId));
     this.dbLocal.messages = [...otherMessages, ...messages];
     this.save();
+  }
+
+  // ==========================================
+  // PORTAL COMUNITÁRIO / ACESSO GERAL (LIVRE)
+  // ==========================================
+
+  // --- VÍDEOS & MENSAGENS ---
+  public getPublicVideos(): PublicVideo[] {
+    return [...(this.dbLocal.publicVideos || [])].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }
+
+  public async addPublicVideo(videoData: Omit<PublicVideo, 'id'>): Promise<PublicVideo> {
+    const newVideo: PublicVideo = {
+      ...videoData,
+      id: `pvid-${Date.now()}`,
+    };
+    if (!this.dbLocal.publicVideos) this.dbLocal.publicVideos = [];
+    this.dbLocal.publicVideos.unshift(newVideo);
+    this.save();
+
+    try {
+      await setDoc(doc(db, 'public_videos', newVideo.id), cleanFirestoreObject(newVideo));
+    } catch (e) {
+      console.warn('Persistência Firestore em segundo plano:', e);
+    }
+    return newVideo;
+  }
+
+  public async deletePublicVideo(id: string): Promise<void> {
+    this.dbLocal.publicVideos = (this.dbLocal.publicVideos || []).filter(v => v.id !== id);
+    this.save();
+    try {
+      await deleteDoc(doc(db, 'public_videos', id));
+    } catch (e) {
+      console.warn('Erro ao deletar vídeo do Firestore:', e);
+    }
+  }
+
+  // --- ÁUDIOS & SERMÕES GRAVADOS ---
+  public getPublicAudios(): PublicAudio[] {
+    return [...(this.dbLocal.publicAudios || [])].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }
+
+  public async addPublicAudio(audioData: Omit<PublicAudio, 'id'>): Promise<PublicAudio> {
+    const newAudio: PublicAudio = {
+      ...audioData,
+      id: `paud-${Date.now()}`,
+    };
+    if (!this.dbLocal.publicAudios) this.dbLocal.publicAudios = [];
+    this.dbLocal.publicAudios.unshift(newAudio);
+    this.save();
+
+    try {
+      await setDoc(doc(db, 'public_audios', newAudio.id), cleanFirestoreObject(newAudio));
+    } catch (e) {
+      console.warn('Persistência Firestore em segundo plano:', e);
+    }
+    return newAudio;
+  }
+
+  public async deletePublicAudio(id: string): Promise<void> {
+    this.dbLocal.publicAudios = (this.dbLocal.publicAudios || []).filter(a => a.id !== id);
+    this.save();
+    try {
+      await deleteDoc(doc(db, 'public_audios', id));
+    } catch (e) {
+      console.warn('Erro ao deletar áudio do Firestore:', e);
+    }
+  }
+
+  // --- ESTUDOS BÍBLICOS ---
+  public getPublicBibleStudies(): PublicBibleStudy[] {
+    return [...(this.dbLocal.publicBibleStudies || [])].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }
+
+  public async addPublicBibleStudy(studyData: Omit<PublicBibleStudy, 'id'>): Promise<PublicBibleStudy> {
+    const newStudy: PublicBibleStudy = {
+      ...studyData,
+      id: `pstd-${Date.now()}`,
+    };
+    if (!this.dbLocal.publicBibleStudies) this.dbLocal.publicBibleStudies = [];
+    this.dbLocal.publicBibleStudies.unshift(newStudy);
+    this.save();
+
+    try {
+      await setDoc(doc(db, 'public_bible_studies', newStudy.id), cleanFirestoreObject(newStudy));
+    } catch (e) {
+      console.warn('Persistência Firestore em segundo plano:', e);
+    }
+    return newStudy;
+  }
+
+  public async deletePublicBibleStudy(id: string): Promise<void> {
+    this.dbLocal.publicBibleStudies = (this.dbLocal.publicBibleStudies || []).filter(s => s.id !== id);
+    this.save();
+    try {
+      await deleteDoc(doc(db, 'public_bible_studies', id));
+    } catch (e) {
+      console.warn('Erro ao deletar estudo do Firestore:', e);
+    }
+  }
+
+  // --- CALENDÁRIO PAROQUIAL ---
+  public getPublicEvents(): PublicCalendarEvent[] {
+    return [...(this.dbLocal.publicEvents || [])].sort(
+      (a, b) => new Date(`${a.date}T${a.time || '00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00'}`).getTime()
+    );
+  }
+
+  public async addPublicEvent(eventData: Omit<PublicCalendarEvent, 'id'>): Promise<PublicCalendarEvent> {
+    const newEvent: PublicCalendarEvent = {
+      ...eventData,
+      id: `pevt-${Date.now()}`,
+    };
+    if (!this.dbLocal.publicEvents) this.dbLocal.publicEvents = [];
+    this.dbLocal.publicEvents.push(newEvent);
+    this.save();
+
+    try {
+      await setDoc(doc(db, 'public_events', newEvent.id), cleanFirestoreObject(newEvent));
+    } catch (e) {
+      console.warn('Persistência Firestore em segundo plano:', e);
+    }
+    return newEvent;
+  }
+
+  public async deletePublicEvent(id: string): Promise<void> {
+    this.dbLocal.publicEvents = (this.dbLocal.publicEvents || []).filter(e => e.id !== id);
+    this.save();
+    try {
+      await deleteDoc(doc(db, 'public_events', id));
+    } catch (e) {
+      console.warn('Erro ao deletar evento do Firestore:', e);
+    }
   }
 }
 
