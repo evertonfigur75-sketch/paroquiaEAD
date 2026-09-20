@@ -47,6 +47,9 @@ export default defineConfig(() => {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff,woff2}'],
           navigateFallback: 'index.html',
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+          skipWaiting: true,
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
